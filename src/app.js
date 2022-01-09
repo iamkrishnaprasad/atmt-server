@@ -32,7 +32,7 @@ if (!process.env.JWT_PRIVATE_KEY) {
 }
 
 app.get('/api/', (req, res) => {
-  res.send('ATMT WEBAPI');
+  res.send('WELCOME TO ATMT WEBAPI');
 });
 
 app.use('/api/v1/', require('./routes/index'));
