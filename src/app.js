@@ -27,9 +27,13 @@ const errorHandler = require('./middleware/error');
 // require('./utils/logger-morgan')(app);
 // require('./utils/logger-winston');
 
-if (!process.env.JWT_PRIVATE_KEY) {
-  throw new Error('FATAL ERROR: jwtPrivateKey is not defined.');
-}
+// if (!process.env.JWT_PRIVATE_KEY) {
+//   throw new Error('FATAL ERROR: jwtPrivateKey is not defined.');
+// }
+
+app.get('/api/', (req, res) => {
+  res.json({ message: 'ATMT WEBAPI' });
+});
 
 app.use('/api/v1/', require('./routes/index'));
 
@@ -40,7 +44,7 @@ app.all('*', (req, res, next) => {
 });
 
 app.use(function (err, req, res, next) {
-  console.log('500: ', err);
+  // console.log('500: ', err);
   // logger.error(err);
   // res.status(500).json({ message: 'Something went wrong.' });
   res.status(500).json({ message: err.message });
