@@ -32,7 +32,7 @@ const errorHandler = require('./middleware/error');
 // }
 
 app.get('/api/', (req, res) => {
-  res.json({ message: 'ATMT WEBAPI' });
+  res.send('ATMT WEBAPI');
 });
 
 app.use('/api/v1/', require('./routes/index'));
