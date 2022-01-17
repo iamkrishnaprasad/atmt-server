@@ -17,10 +17,9 @@ const getInventories = async (purchaseOrderId) => {
   });
 };
 const getTotalInventoriesPrice = async (purchaseOrderId) => {
-  const inventoriesResult = await db.query(
-    'SELECT SUM(inv_purchasepriceperitem) AS totalprice FROM tblinventories WHERE por_id = $1',
-    [purchaseOrderId]
-  );
+  const inventoriesResult = await db.query('SELECT SUM(inv_purchasepriceperitem) AS totalprice FROM tblinventories WHERE por_id = $1', [
+    purchaseOrderId,
+  ]);
   if (inventoriesResult.rowCount === 1) {
     return inventoriesResult.rows[0].totalprice;
   }
@@ -28,7 +27,7 @@ const getTotalInventoriesPrice = async (purchaseOrderId) => {
 
 const getAllPurchaseOrders = async (req, res) => {
   const results = await db.query(
-    'SELECT por_id, por_purchaseorderno, por_purchasedate, bnc_id, ven_name, ven_altname, ven_buildingno, ven_streetno, ven_district, ven_pobox, ven_city, ven_citycode, ven_country, ven_contact, ven_email, ven_website, ven_cvat, ven_crnum, usr_id FROM tblpurchaseorders LEFT OUTER JOIN tblvendors ON tblvendors.ven_id = tblpurchaseorders.ven_id ORDER BY por_id DESC'
+    'SELECT por_id, por_purchaseorderno, por_purchasedate, bnc_id, ven_name, ven_altname, ven_buildingno, ven_streetno, ven_district, ven_pobox, ven_city, ven_citycode, ven_country, ven_contact, ven_email, ven_website, ven_vatno, ven_crno, usr_id FROM tblpurchaseorders LEFT OUTER JOIN tblvendors ON tblvendors.ven_id = tblpurchaseorders.ven_id ORDER BY por_id DESC'
   );
 
   if (results.rowCount > 0) {
@@ -40,8 +39,8 @@ const getAllPurchaseOrders = async (req, res) => {
           purchasedate: row.por_purchasedate,
           branchId: row.bnc_id,
           vendorName: `${row.ven_name} ${row.ven_altname ? '( ' + row.ven_altname + ' )' : ''}`,
-          vendorCVAT: row.ven_cvat,
-          vendorCRNo: row.ven_crnum,
+          vendorVATNo: row.ven_vatno,
+          vendorCRNo: row.ven_crno,
           totalInventoriesPrice: await getTotalInventoriesPrice(row.por_id),
           // {
           //   name: row.ven_name,
@@ -56,8 +55,8 @@ const getAllPurchaseOrders = async (req, res) => {
           //   contact: row.ven_contact,
           //   email: row.ven_email,
           //   website: row.ven_website,
-          //   cvat: row.ven_cvat,
-          //   crnum: row.ven_crnum,
+          //   vatno: row.ven_vatno,
+          //   crno: row.ven_crno,
           // },
           // inventories: await getInventories(row.por_id),
         };
@@ -72,7 +71,7 @@ const getAllPurchaseOrders = async (req, res) => {
 const getPurchaseOrderbyId = async (req, res) => {
   const { id } = req.params;
   const results = await db.query(
-    'SELECT por_id, por_purchaseorderno, por_purchasedate, bnc_id , ven_name, ven_altname, ven_buildingno, ven_streetno, ven_district, ven_pobox, ven_city, ven_citycode, ven_country, ven_contact, ven_email, ven_website, ven_cvat, ven_crnum, usr_id FROM tblpurchaseorders LEFT OUTER JOIN tblvendors ON tblvendors.ven_id = tblpurchaseorders.ven_id WHERE por_id=$1 ORDER BY por_id DESC',
+    'SELECT por_id, por_purchaseorderno, por_purchasedate, bnc_id , ven_name, ven_altname, ven_buildingno, ven_streetno, ven_district, ven_pobox, ven_city, ven_citycode, ven_country, ven_contact, ven_email, ven_website, ven_vatno, ven_crno, usr_id FROM tblpurchaseorders LEFT OUTER JOIN tblvendors ON tblvendors.ven_id = tblpurchaseorders.ven_id WHERE por_id=$1 ORDER BY por_id DESC',
     [id]
   );
 
@@ -97,8 +96,8 @@ const getPurchaseOrderbyId = async (req, res) => {
             contact: row.ven_contact,
             email: row.ven_email,
             website: row.ven_website,
-            cvat: row.ven_cvat,
-            crnum: row.ven_crnum,
+            vatno: row.ven_vatno,
+            crno: row.ven_crno,
           },
           inventories: await getInventories(row.por_id),
         };
@@ -128,8 +127,8 @@ const validate = (payload) => {
       contact: Joi.string().trim().min(0).max(9),
       email: Joi.string().trim().min(0).max(100),
       website: Joi.string().trim().min(0).max(100),
-      cvat: Joi.string().trim().length(15).required(),
-      crnum: Joi.string().trim().min(0).max(20),
+      vatno: Joi.string().trim().length(15).required(),
+      crno: Joi.string().trim().min(0).max(20),
     }),
     inventories: Joi.array()
       .items(
@@ -153,45 +152,15 @@ const createPurchaseOrder = async (req, res) => {
     return res.status(422).json({ message: error.details[0].message });
   }
   const { purchaseorderno, purchasedate, branchId, vendor, inventories } = value;
-  const {
-    name,
-    altName,
-    buildingno,
-    streetno,
-    district,
-    pobox,
-    city,
-    citycode,
-    country,
-    contact,
-    email,
-    website,
-    cvat,
-    crnum,
-  } = vendor;
+  const { name, altName, buildingno, streetno, district, pobox, city, citycode, country, contact, email, website, vatno, crno } = vendor;
 
   let venId = null;
 
-  const vendorsResults = await db.query('SELECT ven_id FROM tblvendors WHERE ven_cvat=$1', [cvat]);
+  const vendorsResults = await db.query('SELECT ven_id FROM tblvendors WHERE ven_vatno=$1', [vatno]);
   if (vendorsResults.rowCount === 0) {
     const vendorCreationResult = await db.query(
-      'INSERT INTO tblvendors(ven_name, ven_altname, ven_buildingno, ven_streetno, ven_district, ven_pobox, ven_city, ven_citycode, ven_country, ven_contact, ven_email, ven_website, ven_cvat, ven_crnum) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING ven_id',
-      [
-        name,
-        altName,
-        buildingno,
-        streetno,
-        district,
-        pobox,
-        city,
-        citycode,
-        country,
-        contact,
-        email,
-        website,
-        cvat,
-        crnum,
-      ]
+      'INSERT INTO tblvendors(ven_name, ven_altname, ven_buildingno, ven_streetno, ven_district, ven_pobox, ven_city, ven_citycode, ven_country, ven_contact, ven_email, ven_website, ven_vatno, ven_crno) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14) RETURNING ven_id',
+      [name, altName, buildingno, streetno, district, pobox, city, citycode, country, contact, email, website, vatno, crno]
     );
     venId = vendorCreationResult.rows[0].ven_id;
   } else if (vendorsResults.rowCount === 1) {
@@ -208,24 +177,22 @@ const createPurchaseOrder = async (req, res) => {
       inventories.forEach(async (inventory) => {
         const { productId, purchaseprice, sellingprice, quantity, vatId } = inventory;
         // compare sellingprice with existing product then update if needed
-        const productResults = await db.query(
-          'SELECT prl_sellingprice FROM tblpricelists WHERE pro_id=$1 AND bnc_id=$2',
-          [productId, branchId]
-        );
+        const productResults = await db.query('SELECT prl_sellingprice FROM tblpricelists WHERE pro_id=$1 AND bnc_id=$2', [
+          productId,
+          branchId,
+        ]);
 
         if (productResults.rowCount === 1) {
           if (sellingprice !== productResults.rows[0].prl_sellingprice) {
-            await db.query(
-              'UPDATE tblpricelists SET prl_sellingprice=$3 WHERE pro_id=$1 AND bnc_id=$2',
-              [productId, branchId, sellingprice]
-            );
+            await db.query('UPDATE tblpricelists SET prl_sellingprice=$3 WHERE pro_id=$1 AND bnc_id=$2', [
+              productId,
+              branchId,
+              sellingprice,
+            ]);
           }
         }
         // update the quantity in stock also
-        const stockResults = await db.query(
-          'SELECT stk_quantity FROM tblstocks WHERE pro_id=$1 AND bnc_id=$2',
-          [productId, branchId]
-        );
+        const stockResults = await db.query('SELECT stk_quantity FROM tblstocks WHERE pro_id=$1 AND bnc_id=$2', [productId, branchId]);
 
         if (stockResults.rowCount === 1) {
           await db.query('UPDATE tblstocks SET stk_quantity=$3 WHERE pro_id=$1 AND bnc_id=$2', [

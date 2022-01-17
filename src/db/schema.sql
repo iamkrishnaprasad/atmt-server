@@ -7,8 +7,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE SEQUENCE tblbranches_bnc_id_seq AS INT START WITH 1;
 CREATE TABLE tblbranches (
 	bnc_id VARCHAR(10) PRIMARY KEY DEFAULT ('BRNCH'|| RIGHT('00000'||(nextval('tblbranches_bnc_id_seq'::regclass)),5)),
-	bnc_name VARCHAR(50) UNIQUE NOT NULL,
-	bnc_code VARCHAR(10) UNIQUE,
+	bnc_name VARCHAR(50) NOT NULL,
+	bnc_altname VARCHAR(50),
 	bnc_buildingno VARCHAR(10),
 	bnc_streetno VARCHAR(10),
 	bnc_district VARCHAR(20),
@@ -16,8 +16,12 @@ CREATE TABLE tblbranches (
 	bnc_city VARCHAR(20),
 	bnc_citycode VARCHAR(10),
 	bnc_country VARCHAR(20),
-	bnc_contact VARCHAR(9),
-	bnc_cvat VARCHAR(15) UNIQUE NOT NULL,
+	bnc_phone VARCHAR(9),
+	bnc_landline VARCHAR(9),
+	bnc_email VARCHAR(100),
+	bnc_website VARCHAR(100),
+	bnc_vatno VARCHAR(15) UNIQUE NOT NULL,
+	bnc_crno VARCHAR(10),
 	bnc_isdeleted BOOLEAN DEFAULT FALSE,
 	bnc_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
@@ -45,6 +49,7 @@ CREATE TABLE tblusers (
 	usrr_id VARCHAR(10) REFERENCES tbluserroles(usrr_id),
 	bnc_id VARCHAR(10) REFERENCES tblbranches(bnc_id)
 );
+INSERT INTO tblusers(usr_name, usr_username, usr_password, usr_email, usr_contact, usrr_id) VALUES ('Krishna Prasad M.', 'krishnaprasadm', '$2b$10$wN6QX99tFdpZ6sRl36WlxeW0Ce8E7SK1YVZR8FT27uQZxUfuqd7ki', 'krishnaprasad1991@gmail.com', '987654321', 'USRRL00001');
 
 CREATE SEQUENCE tblvat_vat_id_seq AS INT START WITH 1;
 CREATE TABLE tblvat (
@@ -82,7 +87,7 @@ CREATE TABLE tblunittypes (
 CREATE SEQUENCE tblproducts_pro_id_seq AS INT START WITH 1;
 CREATE TABLE tblproducts (
 	pro_id VARCHAR(10) PRIMARY KEY DEFAULT ('PRODT'|| RIGHT('00000'||(nextval('tblproducts_pro_id_seq'::regclass)),5)),
-	pro_name VARCHAR(50) NOT NULL,
+	pro_name VARCHAR(70) NOT NULL,
 	pro_altname VARCHAR(50),
 	pro_description VARCHAR(200),
 	pro_isactive BOOLEAN NOT NULL DEFAULT TRUE,
@@ -109,8 +114,8 @@ CREATE TABLE tblvendors (
 	ven_contact VARCHAR(9),
 	ven_email VARCHAR(100),
 	ven_website VARCHAR(100),
-	ven_cvat VARCHAR(15),
-	ven_crnum VARCHAR(20),
+	ven_vatno VARCHAR(15),
+	ven_crno VARCHAR(10),
 	ven_isdeleted BOOLEAN DEFAULT FALSE,
 	ven_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
@@ -188,8 +193,8 @@ CREATE TABLE tblclients (
 	cli_contact VARCHAR(9),
 	cli_email VARCHAR(100),
 	cli_website VARCHAR(100),
-	cli_cvat VARCHAR(15),
-	cli_crnum VARCHAR(20),
+	cli_vatno VARCHAR(15),
+	cli_crno VARCHAR(10),
 	cli_isdeleted BOOLEAN DEFAULT FALSE,
 	cli_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );

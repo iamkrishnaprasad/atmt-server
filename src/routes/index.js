@@ -12,12 +12,12 @@ router.use('/users', [auth, isActive], require('./userRoutes'));
 router.use('/vat', [auth, isActive], require('./vatRoutes'));
 router.use('/brands', [auth, isActive], require('./brandRoutes'));
 router.use('/categories', [auth, isActive], require('./categoryRoutes'));
-// router.use('/unittypes', [auth, isActive])
+router.use('/unittypes', [auth, isActive], require('./unitTypeRoutes'));
 router.use('/products', [auth, isActive], require('./productRoutes'));
 router.use('/vendors', [auth, isActive], require('./vendorRoutes'));
 router.use('/order/purchases/', [auth, isActive], require('./purchasesRoutes'));
 // router.use('/order/purchases/return');
-// router.use('/paymentterms', [auth, isActive], require('./paymentTermRoutes'));
+router.use('/paymentterms', [auth, isActive], require('./paymentTermRoutes'));
 // router.use('/orderstatuses', [auth, isActive], require('./orderStatusRoutes'));
 // router.use('/orderitemstatuses', [auth, isActive], require('./orderItemStatusRoutes'));
 

@@ -53,10 +53,7 @@ const updateBrandbyId = async (req, res) => {
     return res.status(400).json({ message: 'Invalid Request.' });
   }
 
-  const results = await db.query('UPDATE tblbrands SET bnd_name=$2 WHERE bnd_id=$1 RETURNING *', [
-    id,
-    name,
-  ]);
+  const results = await db.query('UPDATE tblbrands SET bnd_name=$2 WHERE bnd_id=$1 RETURNING *', [id, name]);
 
   if (results.rowCount > 0) {
     return res.status(200).json({ message: 'Brand updated successfully.' });
