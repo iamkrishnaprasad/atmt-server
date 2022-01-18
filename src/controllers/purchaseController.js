@@ -128,7 +128,7 @@ const validate = (payload) => {
       email: Joi.string().trim().min(0).max(100),
       website: Joi.string().trim().min(0).max(100),
       vatno: Joi.string().trim().length(15).required(),
-      crno: Joi.string().trim().min(0).max(20),
+      crno: Joi.string().trim().min(0).max(10),
     }),
     inventories: Joi.array()
       .items(
