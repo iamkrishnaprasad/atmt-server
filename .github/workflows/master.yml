@@ -26,9 +26,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
       - name: Fetching secret's
-        env:
-          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
-          PORT: ${{ secrets.PORT }}
-        run: |
-          echo ""
+        run: cp /home/krishna/secrets/ATMTWebAPI/.env.production /home/krishna/atmt-webapi-actions-runner/_work/atmt-server/atmt-server/.env
       - run: pm2 restart ATMTWebAPI
