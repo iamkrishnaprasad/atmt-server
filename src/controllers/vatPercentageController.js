@@ -3,18 +3,18 @@ const db = require('../db');
 
 const validate = (payload) => {
   return Joi.object({
-    vatPercentage: Joi.number().min(1).max(100).required(),
+    vatPercentage: Joi.number().min(1).max(99).required(),
   }).validate(payload);
 };
 
 const getAllVATPercentages = async (req, res) => {
-  const results = await db.query('SELECT vat_id, vat_percentage FROM tblvat ORDER BY vat_percentage');
+  const results = await db.query('SELECT vatp_id, vatp_value FROM tblvatpercentage ORDER BY vatp_value');
 
   if (results.rowCount > 0) {
     const data = results.rows.map((row) => {
       return {
-        id: row.vat_id,
-        vatPercentage: row.vat_percentage,
+        id: row.vatp_id,
+        vatPercentage: row.vatp_value,
       };
     });
     res.status(200).json(data);
@@ -30,12 +30,12 @@ const createVATPercentage = async (req, res) => {
   }
   const { vatPercentage } = value;
 
-  const vatResults = await db.query('SELECT vat_percentage FROM tblvat WHERE vat_percentage=$1', [vatPercentage]);
+  const vatResults = await db.query('SELECT vatp_value FROM tblvatpercentage WHERE vatp_value=$1', [vatPercentage]);
   if (vatResults.rowCount === 1) {
     return res.status(400).json({ message: 'VAT Percentage already exist.' });
   }
 
-  const results = await db.query('INSERT INTO tblvat(vat_percentage) VALUES ($1)', [vatPercentage]);
+  const results = await db.query('INSERT INTO tblvatpercentage(vatp_value) VALUES ($1)', [vatPercentage]);
   if (results.rowCount === 1) {
     return res.status(201).json({ message: 'VAT Percentage created successfully.' });
   }
@@ -49,12 +49,12 @@ const updateVATPercentagebyId = async (req, res) => {
   }
   const { vatPercentage } = value;
 
-  const vatResults = await db.query('SELECT vat_id FROM tblvat WHERE vat_id=$1', [id]);
+  const vatResults = await db.query('SELECT vatp_id FROM tblvatpercentage WHERE vatp_id=$1', [id]);
   if (vatResults.rowCount === 0) {
     return res.status(400).json({ message: 'Invalid Request.' });
   }
 
-  const results = await db.query('UPDATE tblvat SET vat_percentage=$2 WHERE vat_id=$1 RETURNING *', [id, vatPercentage]);
+  const results = await db.query('UPDATE tblvatpercentage SET vatp_value=$2 WHERE vatp_id=$1 RETURNING *', [id, vatPercentage]);
   if (results.rowCount > 0) {
     return res.status(200).json({ message: 'VAT Percentage updated successfully.' });
   }
@@ -63,12 +63,12 @@ const updateVATPercentagebyId = async (req, res) => {
 const deleteVATPercentagebyId = async (req, res) => {
   const { id } = req.params;
 
-  const results = await db.query('SELECT vat_id FROM tblvat WHERE vat_id=$1', [id]);
+  const results = await db.query('SELECT vatp_id FROM tblvatpercentage WHERE vatp_id=$1', [id]);
   if (!results.rowCount > 0) {
     return res.status(404).json({ message: 'VATPercentage does not exist.' });
   }
 
-  await db.query('DELETE FROM tblvat WHERE vat_id=$1', [id]);
+  await db.query('DELETE FROM tblvatpercentage WHERE vatp_id=$1', [id]);
   res.status(204).json({
     status: 'Success',
   });

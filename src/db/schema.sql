@@ -9,13 +9,13 @@ CREATE TABLE tblbranches (
 	bnc_id VARCHAR(10) PRIMARY KEY DEFAULT ('BRNCH'|| RIGHT('00000'||(nextval('tblbranches_bnc_id_seq'::regclass)),5)),
 	bnc_name VARCHAR(50) NOT NULL,
 	bnc_altname VARCHAR(50),
-	bnc_buildingno VARCHAR(10),
-	bnc_streetno VARCHAR(10),
-	bnc_district VARCHAR(20),
+	bnc_buildingno VARCHAR(40),
+	bnc_streetno VARCHAR(15),
+	bnc_district VARCHAR(25),
 	bnc_pobox VARCHAR(10),
 	bnc_city VARCHAR(20),
 	bnc_citycode VARCHAR(10),
-	bnc_country VARCHAR(20),
+	bnc_country VARCHAR(30),
 	bnc_phone VARCHAR(9),
 	bnc_landline VARCHAR(9),
 	bnc_email VARCHAR(100),
@@ -29,7 +29,7 @@ CREATE TABLE tblbranches (
 CREATE SEQUENCE tbluserroles_usrr_id_seq AS INT START WITH 1;
 CREATE TABLE tbluserroles (
 	usrr_id VARCHAR(10) PRIMARY KEY DEFAULT ('USRRL'|| RIGHT('00000'||(nextval('tbluserroles_usrr_id_seq'::regclass)),5)),
-	usrr_role VARCHAR(20) UNIQUE NOT NULL,
+	usrr_role VARCHAR(30) UNIQUE NOT NULL,
 	usrr_isvisible BOOLEAN DEFAULT TRUE,
 	ussr_isdeleted BOOLEAN DEFAULT FALSE,
 	ussr_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
@@ -42,22 +42,22 @@ CREATE TABLE tblusers (
 	usr_username VARCHAR(20) UNIQUE NOT NULL,
 	usr_password VARCHAR(100) NOT NULL,
 	usr_email VARCHAR(100),
-	usr_contact VARCHAR(9),
+	usr_contact VARCHAR(10),
 	usr_isactive BOOLEAN NOT NULL DEFAULT TRUE,
 	usr_isdeleted BOOLEAN DEFAULT FALSE,
 	usr_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	usrr_id VARCHAR(10) REFERENCES tbluserroles(usrr_id),
 	bnc_id VARCHAR(10) REFERENCES tblbranches(bnc_id)
 );
-INSERT INTO tblusers(usr_name, usr_username, usr_password, usr_email, usr_contact, usrr_id) VALUES ('Krishna Prasad M.', 'krishnaprasadm', '$2b$10$wN6QX99tFdpZ6sRl36WlxeW0Ce8E7SK1YVZR8FT27uQZxUfuqd7ki', 'krishnaprasad1991@gmail.com', '987654321', 'USRRL00001');
+INSERT INTO tblusers(usr_name, usr_username, usr_password, usr_email, usr_contact, usrr_id) VALUES ('Krishna Prasad M.', 'krishnaprasadm', '$2b$10$wN6QX99tFdpZ6sRl36WlxeW0Ce8E7SK1YVZR8FT27uQZxUfuqd7ki', 'krishnaprasad1991@gmail.com', '8553818842', 'USRRL00001');
 
-CREATE SEQUENCE tblvat_vat_id_seq AS INT START WITH 1;
-CREATE TABLE tblvat (
-	vat_id VARCHAR(10) PRIMARY KEY DEFAULT ('VAT'|| RIGHT('00000'||(nextval('tblvat_vat_id_seq'::regclass)),5)),
-	vat_percentage INT UNIQUE NOT NULL,
-	vat_isdeleted BOOLEAN DEFAULT FALSE,
-	vat_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
-	CHECK (vat_percentage BETWEEN 1 AND 100)
+CREATE SEQUENCE tblvatpercentage_vatp_id_seq AS INT START WITH 1;
+CREATE TABLE tblvatpercentage (
+	vatp_id VARCHAR(10) PRIMARY KEY DEFAULT ('VATP'|| RIGHT('00000'||(nextval('tblvatpercentage_vatp_id_seq'::regclass)),5)),
+	vatp_value INT UNIQUE NOT NULL,
+	vatp_isdeleted BOOLEAN DEFAULT FALSE,
+	vatp_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
+	CHECK (vatp_value BETWEEN 1 AND 99)
 );
 
 CREATE SEQUENCE tblbrands_bnd_id_seq AS INT START WITH 1;
@@ -89,11 +89,10 @@ CREATE TABLE tblproducts (
 	pro_id VARCHAR(10) PRIMARY KEY DEFAULT ('PRODT'|| RIGHT('00000'||(nextval('tblproducts_pro_id_seq'::regclass)),5)),
 	pro_name VARCHAR(70) NOT NULL,
 	pro_altname VARCHAR(50),
-	pro_description VARCHAR(200),
 	pro_isactive BOOLEAN NOT NULL DEFAULT TRUE,
 	pro_isdeleted BOOLEAN DEFAULT FALSE,
 	pro_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
-	vat_id VARCHAR(10) REFERENCES tblvat(vat_id),
+	vatp_id VARCHAR(10) REFERENCES tblvatpercentage(vatp_id),
 	bnd_id VARCHAR(10) REFERENCES tblbrands(bnd_id),
 	cat_id VARCHAR(10) REFERENCES tblcategories(cat_id),
 	unty_id VARCHAR(10) REFERENCES tblunittypes(unty_id)
@@ -104,18 +103,19 @@ CREATE TABLE tblvendors (
 	ven_id VARCHAR(10) PRIMARY KEY DEFAULT ('VENDR'|| RIGHT('00000'||(nextval('tblvendors_ven_id_seq'::regclass)),5)),
 	ven_name VARCHAR(50) NOT NULL,
 	ven_altname VARCHAR(50),
-	ven_buildingno VARCHAR(10),
-	ven_streetno VARCHAR(10),
-	ven_district VARCHAR(20),
+	ven_buildingno VARCHAR(40),
+	ven_streetno VARCHAR(15),
+	ven_district VARCHAR(25),
 	ven_pobox VARCHAR(10),
 	ven_city VARCHAR(20),
 	ven_citycode VARCHAR(10),
-	ven_country VARCHAR(20),
-	ven_contact VARCHAR(9),
+	ven_country VARCHAR(30),
+	ven_phone VARCHAR(9) NOT NULL,
+	ven_landline VARCHAR(9),
 	ven_email VARCHAR(100),
 	ven_website VARCHAR(100),
-	ven_vatno VARCHAR(15),
-	ven_crno VARCHAR(10),
+	ven_vatno VARCHAR(15) NOT NULL,
+	ven_crno VARCHAR(10) NOT NULL,
 	ven_isdeleted BOOLEAN DEFAULT FALSE,
 	ven_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
@@ -138,12 +138,12 @@ CREATE TABLE tblinventories (
 	inv_purchasepriceperitem NUMERIC(10,2) NOT NULL,
 	inv_sellingpriceperitem NUMERIC(10,2) NOT NULL,
 	inv_quantity INT NOT NULL,
-	inv_inventoryaddeddate TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
+	inv_added_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	inv_addedby UUID REFERENCES tblusers(usr_id),
 	inv_isdeleted BOOLEAN DEFAULT FALSE,
 	por_id VARCHAR(10) REFERENCES tblpurchaseorders(por_id),
 	pro_id VARCHAR(10) REFERENCES tblproducts(pro_id),
-	vat_id VARCHAR(10) REFERENCES tblvat(vat_id)
+	vatp_id VARCHAR(10) REFERENCES tblvatpercentage(vatp_id)
 );
 
 CREATE SEQUENCE tblstocks_stk_id_seq AS INT START WITH 1;
@@ -183,14 +183,16 @@ CREATE TABLE tblclients (
 	cli_id VARCHAR(10) PRIMARY KEY DEFAULT ('CLINT'|| RIGHT('00000'||(nextval('tblclients_cli_id_seq'::regclass)),5)),
 	cli_name VARCHAR(50) NOT NULL,
 	cli_altname VARCHAR(50),
-	cli_buildingno VARCHAR(10),
-	cli_streetno VARCHAR(10),
-	cli_district VARCHAR(20),
+	cli_type CHAR(1) NOT NULL,
+	cli_buildingno VARCHAR(40),
+	cli_streetno VARCHAR(15),
+	cli_district VARCHAR(25),
 	cli_pobox VARCHAR(10),
 	cli_city VARCHAR(20),
 	cli_citycode VARCHAR(10),
-	cli_country VARCHAR(20),
-	cli_contact VARCHAR(9),
+	cli_country VARCHAR(30),
+	cli_phone VARCHAR(9) NOT NULL,
+	cli_landline VARCHAR(9),
 	cli_email VARCHAR(100),
 	cli_website VARCHAR(100),
 	cli_vatno VARCHAR(15),

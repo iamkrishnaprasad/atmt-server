@@ -25,4 +25,8 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
+      - name: Fetching secret's
+        env:
+          JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+          PORT: ${{ secrets.PORT }}
       - run: pm2 restart ATMTWebAPI

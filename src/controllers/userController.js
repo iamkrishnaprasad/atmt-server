@@ -6,9 +6,9 @@ const validateCreateUserPayload = (payload) => {
   return Joi.object({
     name: Joi.string().trim().min(3).max(50).required(),
     username: Joi.string().trim().min(5).max(20).required(),
-    password: Joi.string().trim().min(5).max(100).required(),
-    email: Joi.string().trim().max(100).email(),
-    contact: Joi.string().trim().length(9),
+    password: Joi.string().trim().min(5).max(20).required(),
+    email: Joi.string().trim().min(0).max(100).required(),
+    contact: Joi.string().trim().min(0).max(9).required(),
     userRoleId: Joi.string().trim().max(10).required(),
     branchId: Joi.string().trim().max(10).required(),
   }).validate(payload);
@@ -83,18 +83,14 @@ const createUser = async (req, res) => {
   }
   const { name, username, password, email, contact, userRoleId, branchId } = value;
 
-  const userResults = await db.query('SELECT usr_username FROM tblusers WHERE usr_username=$1', [
-    username,
-  ]);
+  const userResults = await db.query('SELECT usr_username FROM tblusers WHERE usr_username=$1', [username]);
 
   if (userResults.rowCount > 0) {
     return res.status(400).json({ message: 'User already exist.' });
   }
 
   if (emailCheck) {
-    const emailResults = await db.query('SELECT usr_email FROM tblusers WHERE usr_email=$1', [
-      email,
-    ]);
+    const emailResults = await db.query('SELECT usr_email FROM tblusers WHERE usr_email=$1', [email]);
     if (emailResults.rowCount > 0) {
       return res.status(400).json({ message: 'User already exist.' });
     }
@@ -118,20 +114,22 @@ const updateProfile = async (req, res) => {
   const { id } = req.user;
   const { name, email, contact } = req.body;
 
-  const results = await db.query(
-    'UPDATE tblusers SET usr_name=$2, usr_email=$3, usr_contact=$4 WHERE usr_id=$1 RETURNING *',
-    [id, name, email, contact]
-  );
+  const results = await db.query('UPDATE tblusers SET usr_name=$2, usr_email=$3, usr_contact=$4 WHERE usr_id=$1 RETURNING *', [
+    id,
+    name,
+    email,
+    contact,
+  ]);
 
   if (results.rowCount > 0) {
-    return res.status(200).json({ message: 'User updated successfully.' });
+    return res.status(200).json({ message: 'Profile updated successfully.' });
   }
 };
 
 // Update User Profile by Admin
 const updateUserbyAdmin = async (req, res) => {
   const { id } = req.params;
-  const { name, email, contact, userTypeId, branchId, isActive } = req.body;
+  const { name, email, contact, userRoleId, branchId, isActive } = req.body;
 
   const userResults = await db.query('SELECT usr_id FROM tblusers WHERE usr_id=$1', [id]);
   if (userResults.rowCount === 0) {
@@ -139,11 +137,14 @@ const updateUserbyAdmin = async (req, res) => {
   }
 
   const results = await db.query(
-    'UPDATE tblusers SET usr_name=$2, usr_email=$3, usr_contact=$4, ust_id=$5, bnc_id=$6, usr_isactive=$7 WHERE usr_id=$1 RETURNING *',
-    [id, name, email, contact, userTypeId, branchId, isActive]
+    'UPDATE tblusers SET usr_name=$2, usr_email=$3, usr_contact=$4, usrr_id=$5, bnc_id=$6, usr_isactive=$7 WHERE usr_id=$1 RETURNING *',
+    [id, name, email, contact, userRoleId, branchId, isActive]
   );
 
-  res.status(200).json(results.rows[0]);
+  // res.status(200).json(results.rows[0]);
+  if (results.rowCount > 0) {
+    return res.status(200).json({ message: 'User updated successfully.' });
+  }
 };
 
 const updatePasswordbyUser = async (req, res) => {
@@ -154,9 +155,7 @@ const updatePasswordbyUser = async (req, res) => {
   }
   const { password, oldPassword } = value;
 
-  const userResults = await db.query('SELECT usr_id, usr_password FROM tblusers WHERE usr_id=$1', [
-    id,
-  ]);
+  const userResults = await db.query('SELECT usr_id, usr_password FROM tblusers WHERE usr_id=$1', [id]);
 
   const isValidPassword = await bcrypt.compare(oldPassword, userResults.rows[0].usr_password);
   if (!isValidPassword) {
@@ -166,13 +165,9 @@ const updatePasswordbyUser = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const results = await db.query(
-    'UPDATE tblusers SET usr_password=$2 WHERE usr_id=$1 RETURNING *',
-    [id, hashedPassword]
-  );
+  const results = await db.query('UPDATE tblusers SET usr_password=$2 WHERE usr_id=$1 RETURNING *', [id, hashedPassword]);
 
-  if (results.rowCount > 0)
-    return res.status(200).json({ message: 'Password updated successfully.' });
+  if (results.rowCount > 0) return res.status(200).json({ message: 'Password updated successfully.' });
 };
 
 const updatePasswordbyAdmin = async (req, res) => {
@@ -191,13 +186,9 @@ const updatePasswordbyAdmin = async (req, res) => {
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
-  const results = await db.query(
-    'UPDATE tblusers SET usr_password=$2 WHERE usr_id=$1 RETURNING *',
-    [id, hashedPassword]
-  );
+  const results = await db.query('UPDATE tblusers SET usr_password=$2 WHERE usr_id=$1 RETURNING *', [id, hashedPassword]);
 
-  if (results.rowCount > 0)
-    return res.status(200).json({ message: 'Password updated successfully.' });
+  if (results.rowCount > 0) return res.status(200).json({ message: 'Password updated successfully.' });
 };
 
 // Delete User
