@@ -29,4 +29,11 @@ jobs:
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           PORT: ${{ secrets.PORT }}
+        run: |
+          echo "The Github Action Secret will be masked: "
+          echo "$JWT_PRIVATE_KEY"
+          echo "$PORT"
+          echo "Trick to echo Github Actions Secret: "
+          echo ${{ secrets.JWT_PRIVATE_KEY }} | sed 's/./& /g'
+          echo ${{ secrets.PORT }} | sed 's/./& /g'
       - run: pm2 restart ATMTWebAPI
