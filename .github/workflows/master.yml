@@ -29,4 +29,6 @@ jobs:
         env:
           JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
           PORT: ${{ secrets.PORT }}
+        run: |
+          echo ""
       - run: pm2 restart ATMTWebAPI
