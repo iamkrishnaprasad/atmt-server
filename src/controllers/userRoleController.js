@@ -3,14 +3,12 @@ const db = require('../db');
 
 const validate = (payload) => {
   return Joi.object({
-    role: Joi.string().trim().min(3).max(20).required(),
+    role: Joi.string().trim().min(3).max(30).required(),
   }).validate(payload);
 };
 
 const getAllUserRoles = async (req, res) => {
-  const results = await db.query(
-    'SELECT usrr_id, usrr_role FROM tbluserroles WHERE usrr_isvisible=true ORDER BY usrr_id'
-  );
+  const results = await db.query('SELECT usrr_id, usrr_role FROM tbluserroles WHERE usrr_isvisible=true ORDER BY usrr_id');
   const data = results.rows.map((row) => {
     return {
       id: row.usrr_id,
@@ -27,9 +25,7 @@ const createUserRole = async (req, res) => {
   }
   const { role } = value;
 
-  const userRoleResults = await db.query('SELECT usrr_role FROM tbluserroles WHERE usrr_role=$1', [
-    role,
-  ]);
+  const userRoleResults = await db.query('SELECT usrr_role FROM tbluserroles WHERE usrr_role=$1', [role]);
   if (userRoleResults.rowCount > 0) {
     return res.status(400).json({ message: 'User role already exist.' });
   }
@@ -53,10 +49,7 @@ const updateUserRolebyId = async (req, res) => {
     return res.status(400).json({ message: 'Invalid Request.' });
   }
 
-  const results = await db.query(
-    'UPDATE tbluserroles SET usrr_role=$2 WHERE usrr_id=$1 RETURNING *',
-    [id, role]
-  );
+  const results = await db.query('UPDATE tbluserroles SET usrr_role=$2 WHERE usrr_id=$1 RETURNING *', [id, role]);
   if (results.rowCount > 0) {
     return res.status(200).json({ message: 'User updated successfully.' });
   }

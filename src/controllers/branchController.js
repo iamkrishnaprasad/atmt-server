@@ -4,20 +4,20 @@ const db = require('../db');
 const validate = (payload) => {
   return Joi.object({
     name: Joi.string().trim().min(3).max(50).required(),
-    altname: Joi.string().trim().min(0).max(50),
-    buildingno: Joi.string().trim().min(0).max(10),
-    streetno: Joi.string().trim().min(0).max(10),
-    district: Joi.string().trim().min(0).max(20),
-    pobox: Joi.string().trim().min(0).max(10),
-    city: Joi.string().trim().min(0).max(20),
-    citycode: Joi.string().trim().min(0).max(10),
-    country: Joi.string().trim().min(0).max(20),
-    phone: Joi.string().trim().length(9),
-    landline: Joi.string().trim().length(9),
-    email: Joi.string().trim().min(0).max(100),
-    website: Joi.string().trim().min(0).max(100),
+    altname: Joi.string().trim().min(0).max(50).required(),
+    buildingno: Joi.string().trim().min(0).max(40).required(),
+    streetno: Joi.string().trim().min(0).max(15).required(),
+    district: Joi.string().trim().min(0).max(25).required(),
+    pobox: Joi.string().trim().min(0).max(10).required(),
+    city: Joi.string().trim().min(0).max(20).required(),
+    citycode: Joi.string().trim().min(0).max(10).required(),
+    country: Joi.string().trim().min(0).max(30).required(),
+    phone: Joi.string().trim().length(9).required(),
+    landline: Joi.string().trim().length(9).required(),
+    email: Joi.string().trim().min(0).max(100).required(),
+    website: Joi.string().trim().min(0).max(100).required(),
     vatno: Joi.string().trim().length(15).required(),
-    crno: Joi.string().trim().min(0).max(10),
+    crno: Joi.string().trim().min(0).max(10).required(),
   }).validate(payload);
 };
 

@@ -3,7 +3,7 @@ const db = require('../db');
 
 const validate = (payload) => {
   return Joi.object({
-    name: Joi.string().trim().min(1).max(50).required(),
+    name: Joi.string().trim().min(1).max(30).required(),
   }).validate(payload);
 };
 
@@ -30,10 +30,7 @@ const createPaymentTerm = async (req, res) => {
   }
   const { name } = value;
 
-  const paymentTermResults = await db.query(
-    'SELECT pyt_name FROM tblpaymentterms WHERE pyt_name=$1',
-    [name]
-  );
+  const paymentTermResults = await db.query('SELECT pyt_name FROM tblpaymentterms WHERE pyt_name=$1', [name]);
   if (paymentTermResults.rowCount === 1) {
     return res.status(400).json({ message: 'Payment term already exist.' });
   }
@@ -52,17 +49,12 @@ const updatePaymentTermbyId = async (req, res) => {
   }
   const { name } = value;
 
-  const paymentTermResults = await db.query('SELECT pyt_id FROM tblpaymentterms WHERE pyt_id=$1', [
-    id,
-  ]);
+  const paymentTermResults = await db.query('SELECT pyt_id FROM tblpaymentterms WHERE pyt_id=$1', [id]);
   if (paymentTermResults.rowCount === 0) {
     return res.status(400).json({ message: 'Invalid Request.' });
   }
 
-  const results = await db.query(
-    'UPDATE tblpaymentterms SET pyt_name=$2 WHERE pyt_id=$1 RETURNING *',
-    [id, name]
-  );
+  const results = await db.query('UPDATE tblpaymentterms SET pyt_name=$2 WHERE pyt_id=$1 RETURNING *', [id, name]);
 
   if (results.rowCount > 0) {
     return res.status(200).json({ message: 'Payment term updated successfully.' });
