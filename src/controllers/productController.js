@@ -9,7 +9,7 @@ const validatSearchPayload = (payload) => {
 
 const getActiveProducts = async (req, res) => {
   const results = await db.query(
-    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true ORDER BY pro_id'
+    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, unty_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true ORDER BY pro_id'
   );
 
   if (results.rowCount > 0) {
@@ -26,6 +26,7 @@ const getActiveProducts = async (req, res) => {
         vatPercentageId: row.vatp_id,
         brandId: row.bnd_id,
         categoryId: row.cat_id,
+        unitTypeId: row.unty_id,
       };
     });
     res.status(200).json(data);
@@ -36,7 +37,7 @@ const getActiveProducts = async (req, res) => {
 
 const getAllProducts = async (req, res) => {
   const results = await db.query(
-    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id ORDER BY pro_id'
+    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, unty_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id ORDER BY pro_id'
   );
 
   if (results.rowCount > 0) {
@@ -53,6 +54,7 @@ const getAllProducts = async (req, res) => {
         vatPercentageId: row.vatp_id,
         brandId: row.bnd_id,
         categoryId: row.cat_id,
+        unitTypeId: row.unty_id,
       };
     });
     res.status(200).json(data);
@@ -69,7 +71,7 @@ const getActiveProductsbySearch = async (req, res) => {
   const { keyword } = value;
 
   const results = await db.query(
-    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true AND lower(pro_name) LIKE lower($1) ORDER BY pro_id',
+    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, unty_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true AND lower(pro_name) LIKE lower($1) ORDER BY pro_id',
     ['%' + keyword + '%']
   );
 
@@ -87,6 +89,7 @@ const getActiveProductsbySearch = async (req, res) => {
         vatPercentageId: row.vatp_id,
         brandId: row.bnd_id,
         categoryId: row.cat_id,
+        unitTypeId: row.unty_id,
       };
     });
     res.status(200).json(data);
@@ -103,7 +106,7 @@ const getAllProductsbySearch = async (req, res) => {
   const { keyword } = value;
 
   const results = await db.query(
-    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE lower(pro_name) LIKE lower($1) ORDER BY pro_id',
+    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, unty_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE lower(pro_name) LIKE lower($1) ORDER BY pro_id',
     ['%' + keyword + '%']
   );
 
@@ -121,6 +124,7 @@ const getAllProductsbySearch = async (req, res) => {
         vatPercentageId: row.vatp_id,
         brandId: row.bnd_id,
         categoryId: row.cat_id,
+        unitTypeId: row.unty_id,
       };
     });
     res.status(200).json(data);
@@ -131,8 +135,8 @@ const getAllProductsbySearch = async (req, res) => {
 
 const validate = (payload) => {
   return Joi.object({
-    name: Joi.string().trim().min(5).max(50).required(),
-    altname: Joi.string().trim().min(0).max(50).required(),
+    name: Joi.string().trim().min(5).max(70).required(),
+    altname: Joi.string().trim().min(0).max(70).required(),
     sellingPrice: Joi.number().precision(2).required(),
     discountPrice: Joi.number().precision(2).required(),
     lowStockValue: Joi.number().min(1).max(200).required(),
@@ -140,6 +144,7 @@ const validate = (payload) => {
     brandId: Joi.string().trim().min(5).max(10).required(),
     categoryId: Joi.string().trim().min(5).max(10).required(),
     branchId: Joi.string().trim().min(5).max(10).required(),
+    unitTypeId: Joi.string().trim().min(5).max(10).required(),
   }).validate(payload);
 };
 
@@ -149,7 +154,7 @@ const createProduct = async (req, res) => {
   if (error) {
     return res.status(422).json({ message: error.details[0].message });
   }
-  const { name, altname, sellingPrice, discountPrice, lowStockValue, vatPercentageId, brandId, categoryId, branchId } = value;
+  const { name, altname, sellingPrice, discountPrice, lowStockValue, vatPercentageId, brandId, categoryId, branchId, unitTypeId } = value;
 
   const productsResults = await db.query('SELECT pro_name FROM tblproducts WHERE lower(pro_name) = lower($1)', [name]);
   if (productsResults.rowCount > 0) {
@@ -157,8 +162,8 @@ const createProduct = async (req, res) => {
   }
 
   const results = await db.query(
-    'INSERT INTO tblproducts(pro_name, pro_altname, vatp_id, bnd_id, cat_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-    [name, altname, vatPercentageId, brandId, categoryId]
+    'INSERT INTO tblproducts(pro_name, pro_altname, vatp_id, bnd_id, cat_id, unty_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+    [name, altname, vatPercentageId, brandId, categoryId, unitTypeId]
   );
   if (results.rowCount === 1) {
     await db.query('INSERT INTO tblpricelists(prl_sellingprice, prl_discountprice, pro_id, bnc_id, usr_id) VALUES ($1, $2, $3, $4, $5)', [
@@ -182,8 +187,8 @@ const createProduct = async (req, res) => {
 const updateProductbyId = async (req, res) => {
   const { id } = req.params;
   const { error, value } = Joi.object({
-    name: Joi.string().trim().min(5).max(50).required(),
-    altname: Joi.string().trim().min(0).max(50).required(),
+    name: Joi.string().trim().min(5).max(70).required(),
+    altname: Joi.string().trim().min(0).max(70).required(),
     sellingPrice: Joi.number().precision(2).required(),
     discountPrice: Joi.number().precision(2).required(),
     lowStockValue: Joi.number().min(1).max(200).required(),
@@ -192,13 +197,26 @@ const updateProductbyId = async (req, res) => {
     brandId: Joi.string().trim().min(5).max(10).required(),
     categoryId: Joi.string().trim().min(5).max(10).required(),
     branchId: Joi.string().trim().min(5).max(10).required(),
+    unitTypeId: Joi.string().trim().min(5).max(10).required(),
   }).validate(req.body);
 
   if (error) {
     return res.status(422).json({ message: error.details[0].message });
   }
 
-  const { name, altname, sellingPrice, discountPrice, lowStockValue, isActive, vatPercentageId, brandId, categoryId, branchId } = value;
+  const {
+    name,
+    altname,
+    sellingPrice,
+    discountPrice,
+    lowStockValue,
+    isActive,
+    vatPercentageId,
+    brandId,
+    categoryId,
+    branchId,
+    unitTypeId,
+  } = value;
 
   const productsResults = await db.query('SELECT pro_id FROM tblproducts WHERE pro_id=$1', [id]);
   if (productsResults.rowCount === 0) {
@@ -206,8 +224,8 @@ const updateProductbyId = async (req, res) => {
   }
 
   const results = await db.query(
-    'UPDATE tblproducts SET pro_name=$2, pro_altname=$3, pro_isactive=$4, vatp_id=$5, bnd_id=$6, cat_id=$7 WHERE pro_id=$1 RETURNING pro_id',
-    [id, name, altname, isActive, vatPercentageId, brandId, categoryId]
+    'UPDATE tblproducts SET pro_name=$2, pro_altname=$3, pro_isactive=$4, vatp_id=$5, bnd_id=$6, cat_id=$7, unty_id=$8 WHERE pro_id=$1 RETURNING pro_id',
+    [id, name, altname, isActive, vatPercentageId, brandId, categoryId, unitTypeId]
   );
 
   if (results.rowCount === 1) {
