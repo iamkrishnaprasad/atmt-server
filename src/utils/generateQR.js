@@ -34,8 +34,7 @@ const generateTLVEncodeDataInHEX = (data) => {
 
 const toASCII = (data) => {
   let str = '';
-  for (let i = 0; i < data.length; i += 2)
-    str += String.fromCharCode(parseInt(data.substr(i, 2), 16));
+  for (let i = 0; i < data.length; i += 2) str += String.fromCharCode(parseInt(data.substr(i, 2), 16));
   return str;
 };
 

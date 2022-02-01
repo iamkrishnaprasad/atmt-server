@@ -49,7 +49,7 @@ CREATE TABLE tblusers (
 	usrr_id VARCHAR(10) REFERENCES tbluserroles(usrr_id),
 	bnc_id VARCHAR(10) REFERENCES tblbranches(bnc_id)
 );
-INSERT INTO tblusers(usr_name, usr_username, usr_password, usr_email, usr_contact, usrr_id) VALUES ('Krishna Prasad M.', 'krishnaprasadm', '$2b$10$wN6QX99tFdpZ6sRl36WlxeW0Ce8E7SK1YVZR8FT27uQZxUfuqd7ki', 'krishnaprasad1991@gmail.com', '8553818842', 'USRRL00001');
+INSERT INTO tblusers(usr_name, usr_username, usr_password, usr_email, usr_contact, usrr_id) VALUES ('Krishna Prasad M.', 'krishnaprasadm', '$2b$10$EHjWpGg.XQ3JaV6ZQs4do.GCDtygiS7KJ7u7rlg/aGpk9S9mrEe76', 'krishnaprasad1991@gmail.com', '8553818842', 'USRRL00001');
 
 CREATE SEQUENCE tblvatpercentage_vatp_id_seq AS INT START WITH 1;
 CREATE TABLE tblvatpercentage (
@@ -59,6 +59,7 @@ CREATE TABLE tblvatpercentage (
 	vatp_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	CHECK (vatp_value BETWEEN 1 AND 99)
 );
+INSERT INTO tblvatpercentage(vatp_value) VALUES (15);
 
 CREATE SEQUENCE tblbrands_bnd_id_seq AS INT START WITH 1;
 CREATE TABLE tblbrands (
@@ -67,14 +68,16 @@ CREATE TABLE tblbrands (
 	bnd_isdeleted BOOLEAN DEFAULT FALSE,
 	bnd_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
+INSERT INTO tblbrands(bnd_name) VALUES ('UNKNOWN');
 
 CREATE SEQUENCE tblcategories_cat_id_seq AS INT START WITH 1;
 CREATE TABLE tblcategories (
-	cat_id VARCHAR(10) PRIMARY KEY DEFAULT ('PRDCT'|| RIGHT('00000'||(nextval('tblcategories_cat_id_seq'::regclass)),5)),
+	cat_id VARCHAR(10) PRIMARY KEY DEFAULT ('CATRY'|| RIGHT('00000'||(nextval('tblcategories_cat_id_seq'::regclass)),5)),
 	cat_name VARCHAR(50) UNIQUE NOT NULL,
 	cat_isdeleted BOOLEAN DEFAULT FALSE,
 	cat_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
+INSERT INTO tblcategories(cat_name) VALUES ('UNCATEGORIZED'),('CONS'),('MATL'),('PLB'),('SFTY'),('TLS');
 
 CREATE SEQUENCE tblunittypes_unty_id_seq AS INT START WITH 1;
 CREATE TABLE tblunittypes (
@@ -83,12 +86,13 @@ CREATE TABLE tblunittypes (
 	unty_isdeleted BOOLEAN DEFAULT FALSE,
 	unty_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
+INSERT INTO tblunittypes(unty_name) VALUES ('BAG'),('BND'),('BOX'),('CAN'),('EA'),('LM'),('MTR'),('PAIL'),('PAIR'),('PCS'),('PKT'),('ROLL'),('SET'),('TUBE');
 
 CREATE SEQUENCE tblproducts_pro_id_seq AS INT START WITH 1;
 CREATE TABLE tblproducts (
 	pro_id VARCHAR(10) PRIMARY KEY DEFAULT ('PRODT'|| RIGHT('00000'||(nextval('tblproducts_pro_id_seq'::regclass)),5)),
 	pro_name VARCHAR(70) NOT NULL,
-	pro_altname VARCHAR(50),
+	pro_altname VARCHAR(70),
 	pro_isactive BOOLEAN NOT NULL DEFAULT TRUE,
 	pro_isdeleted BOOLEAN DEFAULT FALSE,
 	pro_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
@@ -163,6 +167,7 @@ CREATE TABLE tblpricelists (
 	prl_id VARCHAR(10) PRIMARY KEY DEFAULT ('PRICE'|| RIGHT('00000'||(nextval('tblpricelists_prl_id_seq'::regclass)),5)),
 	prl_sellingprice NUMERIC(10,2) NOT NULL DEFAULT 0.00,
 	prl_discountprice NUMERIC(10,2) NOT NULL DEFAULT 0.00,
+	prl_marginprice NUMERIC(10,2) NOT NULL DEFAULT 0.00,
 	prl_isdeleted BOOLEAN DEFAULT FALSE,
 	prl_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	pro_id VARCHAR(10) REFERENCES tblproducts(pro_id),
@@ -199,4 +204,44 @@ CREATE TABLE tblclients (
 	cli_crno VARCHAR(10),
 	cli_isdeleted BOOLEAN DEFAULT FALSE,
 	cli_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
+);
+
+CREATE SEQUENCE invoice_no_seq AS INT START WITH 3524;
+CREATE SEQUENCE quotation_no_seq AS INT START WITH 1;
+CREATE SEQUENCE deliverynote_no_seq AS INT START WITH 1;
+
+CREATE TABLE tblordertypes (
+	ordt_id SERIAL PRIMARY KEY,
+	ordt_name VARCHAR(25) NOT NULL,
+	ordt_isdeleted BOOLEAN DEFAULT FALSE,
+	ordt_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
+);
+INSERT INTO tblordertypes(ordt_name) VALUES ('Tax Invoice'), ('Simplified Tax Invoice'), ('Quotation'), ('Delivery Note');
+
+CREATE SEQUENCE tblorders_ord_id_seq AS INT START WITH 1;
+CREATE TABLE tblorders (
+	ord_id VARCHAR(10) PRIMARY KEY DEFAULT ('ORD'|| RIGHT('0000000'||(nextval('tblorders_ord_id_seq'::regclass)),7)),
+	ord_no VARCHAR(15) NOT NULL,
+	validTill TIMESTAMP,
+	refNo VARCHAR(15),
+	ord_isdeleted BOOLEAN DEFAULT FALSE,
+	ord_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
+	ordt_id INT REFERENCES tblordertypes(ordt_id),
+	bnc_id VARCHAR(10) REFERENCES tblbranches(bnc_id),
+	cli_id VARCHAR(10) REFERENCES tblclients(cli_id),
+	pyt_id VARCHAR(10) REFERENCES tblpaymentterms(pyt_id),
+	usr_id UUID REFERENCES tblusers(usr_id)
+);
+
+CREATE SEQUENCE tblorderitems_ordi_id_seq AS INT START WITH 1;
+CREATE TABLE tblorderitems (
+	ordi_id VARCHAR(10) PRIMARY KEY DEFAULT ('ORDI'|| RIGHT('00000'||(nextval('tblorderitems_ordi_id_seq'::regclass)),5)),
+	ordi_sellingpriceperitem NUMERIC(10,2) NOT NULL,
+	ordi_discountpriceperitem NUMERIC(10,2) NOT NULL,
+	ordi_quantity INT NOT NULL,
+	ordi_addedby UUID REFERENCES tblusers(usr_id),
+	ordi_isdeleted BOOLEAN DEFAULT FALSE,
+	ord_id VARCHAR(10) REFERENCES tblorders(ord_id),
+	pro_id VARCHAR(10) REFERENCES tblproducts(pro_id),
+	vatp_id VARCHAR(10) REFERENCES tblvatpercentage(vatp_id)
 );

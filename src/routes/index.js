@@ -18,6 +18,7 @@ router.use('/vendors', [auth, isActive], require('./vendorRoutes'));
 router.use('/order/purchases/', [auth, isActive], require('./purchasesRoutes'));
 // router.use('/order/purchases/return');
 router.use('/paymentterms', [auth, isActive], require('./paymentTermRoutes'));
+router.use('/invoices', [auth, isActive], require('./invoiceRoutes'));
 // router.use('/orderstatuses', [auth, isActive], require('./orderStatusRoutes'));
 // router.use('/orderitemstatuses', [auth, isActive], require('./orderItemStatusRoutes'));
 
