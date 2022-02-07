@@ -3,7 +3,7 @@ const db = require('../db');
 
 const validatSearchPayload = (payload) => {
   return Joi.object({
-    keyword: Joi.string().trim().min(1).max(15).required(),
+    keyword: Joi.string().trim().min(2).max(15).required(),
   }).validate(payload);
 };
 
@@ -71,30 +71,25 @@ const getActiveProductsbySearch = async (req, res) => {
   const { keyword } = value;
 
   const results = await db.query(
-    'SELECT tblproducts.pro_id, pro_name, pro_altname, pro_isactive, vatp_id, bnd_id, cat_id, unty_id, prl_sellingprice, prl_discountprice, stk_quantity, stk_lowstockvalue FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true AND lower(pro_name) LIKE lower($1) ORDER BY pro_id',
+    'SELECT tblproducts.pro_id, pro_name, vatp_id, prl_marginprice, prl_sellingprice, prl_discountprice, stk_quantity FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true AND stk_quantity>0 AND lower(pro_name) LIKE lower($1) OR lower(tblproducts.pro_id) LIKE lower($1) ORDER BY pro_id',
     ['%' + keyword + '%']
   );
 
   if (results.rowCount > 0) {
     const data = results.rows.map((row) => {
       return {
-        id: row.pro_id,
+        productId: row.pro_id,
         name: row.pro_name,
-        altname: row.pro_altname,
-        sellingPrice: parseFloat(row.prl_sellingprice),
+        marginPrice: parseFloat(row.prl_marginprice),
+        unitSellingPrice: parseFloat(row.prl_sellingprice),
         discountPrice: parseFloat(row.prl_discountprice),
-        stockQty: parseInt(row.stk_quantity),
-        lowStockValue: parseInt(row.stk_lowstockvalue),
-        isActive: row.pro_isactive,
+        stockAvailable: parseInt(row.stk_quantity),
         vatPercentageId: row.vatp_id,
-        brandId: row.bnd_id,
-        categoryId: row.cat_id,
-        unitTypeId: row.unty_id,
       };
     });
-    res.status(200).json(data);
+    res.status(200).json({ data, message: `${results.rowCount} product found.` });
   } else {
-    res.status(404).json({ message: 'Data not available.' });
+    res.status(404).json({ message: 'No product found.' });
   }
 };
 
