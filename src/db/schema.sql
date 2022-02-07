@@ -222,8 +222,8 @@ CREATE SEQUENCE tblorders_ord_id_seq AS INT START WITH 1;
 CREATE TABLE tblorders (
 	ord_id VARCHAR(10) PRIMARY KEY DEFAULT ('ORD'|| RIGHT('0000000'||(nextval('tblorders_ord_id_seq'::regclass)),7)),
 	ord_no VARCHAR(15) NOT NULL,
-	validTill TIMESTAMP,
-	refNo VARCHAR(15),
+	ord_validtill TIMESTAMP,
+	ord_refno VARCHAR(15),
 	ord_isdeleted BOOLEAN DEFAULT FALSE,
 	ord_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	ordt_id INT REFERENCES tblordertypes(ordt_id),
