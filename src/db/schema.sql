@@ -182,6 +182,7 @@ CREATE TABLE tblpaymentterms (
 	pyt_isdeleted BOOLEAN DEFAULT FALSE,
 	pyt_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
+INSERT INTO tblpaymentterms(pyt_name) VALUES ('CASH'),('IMMEDIATE PAYMENT'),('15 DAYS'),('30 DAYS'),('45 DAYS'),('60 DAYS');
 
 CREATE SEQUENCE tblclients_cli_id_seq AS INT START WITH 1;
 CREATE TABLE tblclients (
