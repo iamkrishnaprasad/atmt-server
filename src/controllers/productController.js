@@ -71,7 +71,7 @@ const getActiveProductsbySearch = async (req, res) => {
   const { keyword } = value;
 
   const results = await db.query(
-    'SELECT tblproducts.pro_id, pro_name, vatp_id, prl_marginprice, prl_sellingprice, prl_discountprice, stk_quantity FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true AND stk_quantity>0 AND lower(pro_name) LIKE lower($1) OR lower(tblproducts.pro_id) LIKE lower($1) ORDER BY pro_id',
+    'SELECT tblproducts.pro_id, pro_name, vatp_id, prl_marginprice, prl_sellingprice, prl_discountprice, stk_quantity FROM tblproducts INNER JOIN tblpricelists ON tblpricelists.pro_id = tblproducts.pro_id INNER JOIN tblstocks ON tblstocks.pro_id = tblproducts.pro_id WHERE pro_isactive=true AND stk_quantity>0 AND (lower(pro_name) LIKE LOWER($1) OR lower(tblproducts.pro_id) LIKE LOWER($1)) ORDER BY pro_id',
     ['%' + keyword + '%']
   );
 
