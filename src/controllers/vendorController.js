@@ -16,8 +16,8 @@ const validate = (payload) => {
     landline: Joi.string().trim().min(0).max(9).required(),
     email: Joi.string().trim().min(0).max(100).required(),
     website: Joi.string().trim().min(0).max(100).required(),
-    vatno: Joi.string().trim().length(15).required(),
-    crno: Joi.string().trim().length(10).required(),
+    vatno: Joi.string().trim().min(0).max(15).required(),
+    crno: Joi.string().trim().min(0).max(10).required(),
   }).validate(payload);
 };
 
