@@ -3,8 +3,8 @@ const db = require('../db');
 
 const validate = (payload) => {
   return Joi.object({
-    name: Joi.string().trim().min(5).max(50).required(),
-    altname: Joi.string().trim().min(0).max(50).required(),
+    name: Joi.string().trim().min(5).max(80).required(),
+    altname: Joi.string().trim().min(0).max(80).required(),
     type: Joi.string().trim().length(1),
     buildingno: Joi.string().trim().min(0).max(40).required(),
     streetno: Joi.string().trim().min(0).max(15).required(),
