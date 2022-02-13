@@ -1,3 +1,5 @@
+ALTER DATABASE atmt RENAME TO atmtstaging;
+
 CREATE DATABASE atmt;
 
 \c atmt
@@ -86,7 +88,7 @@ CREATE TABLE tblunittypes (
 	unty_isdeleted BOOLEAN DEFAULT FALSE,
 	unty_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc')
 );
-INSERT INTO tblunittypes(unty_name) VALUES ('BAG'),('BND'),('BOX'),('CAN'),('EA'),('LM'),('MTR'),('PAIL'),('PAIR'),('PCS'),('PKT'),('ROLL'),('SET'),('TUBE');
+INSERT INTO tblunittypes(unty_name) VALUES ('BAG'),('BDL'),('BND'),('BOX'),('CAN'),('EA'),('LM'),('MTR'),('PAIL'),('PAIR'),('PCS'),('PKT'),('ROLL'),('SET'),('TUBE');
 
 CREATE SEQUENCE tblproducts_pro_id_seq AS INT START WITH 1;
 CREATE TABLE tblproducts (
@@ -105,8 +107,8 @@ CREATE TABLE tblproducts (
 CREATE SEQUENCE tblvendors_ven_id_seq AS INT START WITH 1;
 CREATE TABLE tblvendors (
 	ven_id VARCHAR(10) PRIMARY KEY DEFAULT ('VENDR'|| RIGHT('00000'||(nextval('tblvendors_ven_id_seq'::regclass)),5)),
-	ven_name VARCHAR(50) NOT NULL,
-	ven_altname VARCHAR(50),
+	ven_name VARCHAR(80) NOT NULL,
+	ven_altname VARCHAR(80),
 	ven_buildingno VARCHAR(40),
 	ven_streetno VARCHAR(15),
 	ven_district VARCHAR(25),
@@ -187,8 +189,8 @@ INSERT INTO tblpaymentterms(pyt_name) VALUES ('CASH'),('IMMEDIATE PAYMENT'),('15
 CREATE SEQUENCE tblclients_cli_id_seq AS INT START WITH 1;
 CREATE TABLE tblclients (
 	cli_id VARCHAR(10) PRIMARY KEY DEFAULT ('CLINT'|| RIGHT('00000'||(nextval('tblclients_cli_id_seq'::regclass)),5)),
-	cli_name VARCHAR(50) NOT NULL,
-	cli_altname VARCHAR(50),
+	cli_name VARCHAR(80) NOT NULL,
+	cli_altname VARCHAR(80),
 	cli_type CHAR(1) NOT NULL,
 	cli_buildingno VARCHAR(40),
 	cli_streetno VARCHAR(15),
