@@ -13,7 +13,7 @@ const validate = (payload) => {
     citycode: Joi.string().trim().min(0).max(10).required(),
     country: Joi.string().trim().min(0).max(30).required(),
     phone: Joi.string().trim().length(9).required(),
-    landline: Joi.string().trim().length(9).required(),
+    landline: Joi.string().trim().min(0).max(9).required(),
     email: Joi.string().trim().min(0).max(100).required(),
     website: Joi.string().trim().min(0).max(100).required(),
     vatno: Joi.string().trim().length(15).required(),

@@ -6,7 +6,7 @@ const generateQR = require('../utils/generateQR');
 const validate = (payload) => {
   return Joi.object({
     validTillNoDays: Joi.number().min(0).max(60).required(),
-    refNo: Joi.string().trim().min(0).max(15).required(),
+    refNo: Joi.string().trim().min(0).max(30).required(),
     paymentTermId: Joi.string().trim().max(10).required(),
     branchId: Joi.string().trim().max(10).required(),
     clientId: Joi.string().trim().max(10).required(),
