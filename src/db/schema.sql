@@ -240,7 +240,7 @@ CREATE SEQUENCE tblorderitems_ordi_id_seq AS INT START WITH 1;
 CREATE TABLE tblorderitems (
 	ordi_id VARCHAR(10) PRIMARY KEY DEFAULT ('ORDI'|| RIGHT('00000'||(nextval('tblorderitems_ordi_id_seq'::regclass)),5)),
 	ordi_sellingpriceperitem NUMERIC(10,2) NOT NULL,
-	ordi_discountpriceperitem NUMERIC(10,2) NOT NULL,
+	ordi_discountpriceperitem NUMERIC(10,4) NOT NULL,
 	ordi_quantity INT NOT NULL,
 	ordi_addedby UUID REFERENCES tblusers(usr_id),
 	ordi_isdeleted BOOLEAN DEFAULT FALSE,

@@ -16,7 +16,7 @@ const validate = (payload) => {
           productId: Joi.string().trim().max(10).required(),
           vatPercentageId: Joi.string().trim().max(10).required(),
           sellingPrice: Joi.number().precision(2).required(),
-          discountPrice: Joi.number().precision(2).required(),
+          discountPrice: Joi.number().precision(4).required(),
           quantity: Joi.number().greater(0).required(),
         })
       )
