@@ -4,7 +4,7 @@ const db = require('../db');
 const validate = (payload) => {
   return Joi.object({
     name: Joi.string().trim().min(5).max(80).required(),
-    altname: Joi.string().trim().min(0).max(80).required(),
+    altName: Joi.string().trim().min(0).max(80).required(),
     type: Joi.string().trim().length(1),
     buildingno: Joi.string().trim().min(0).max(40).required(),
     streetno: Joi.string().trim().min(0).max(15).required(),
@@ -38,7 +38,7 @@ const getAllClients = async (req, res) => {
       return {
         id: row.cli_id,
         name: row.cli_name,
-        altname: row.cli_altname,
+        altName: row.cli_altname,
         type: row.cli_type,
         buildingno: row.cli_buildingno,
         streetno: row.cli_streetno,
@@ -78,7 +78,7 @@ const searchClientbyVATNo = async (req, res) => {
       return {
         id: row.cli_id,
         name: row.cli_name,
-        altname: row.cli_altname,
+        altName: row.cli_altname,
         type: row.cli_type,
         buildingno: row.cli_buildingno,
         streetno: row.cli_streetno,
@@ -108,7 +108,7 @@ const createClient = async (req, res) => {
   }
   const {
     name,
-    altname,
+    altName,
     type,
     buildingno,
     streetno,
@@ -132,7 +132,7 @@ const createClient = async (req, res) => {
 
   const results = await db.query(
     'INSERT INTO tblclients(cli_name, cli_altname, cli_type, cli_buildingno, cli_streetno, cli_district, cli_pobox, cli_city, cli_citycode, cli_country, cli_phone, cli_landline, cli_email, cli_website, cli_vatno, cli_crno) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)',
-    [name, altname, type, buildingno, streetno, district, pobox, city, citycode, country, phone, landline, email, website, vatno, crno]
+    [name, altName, type, buildingno, streetno, district, pobox, city, citycode, country, phone, landline, email, website, vatno, crno]
   );
   if (results.rowCount === 1) {
     return res.status(201).json({ message: 'Client created successfully.' });
@@ -148,7 +148,7 @@ const updateClientbyId = async (req, res) => {
 
   const {
     name,
-    altname,
+    altName,
     type,
     buildingno,
     streetno,
@@ -171,7 +171,7 @@ const updateClientbyId = async (req, res) => {
 
   const results = await db.query(
     'UPDATE tblclients SET cli_name=$2, cli_altname=$3, cli_type=$4, cli_buildingno=$5, cli_streetno=$6, cli_district=$7, cli_pobox=$8, cli_city=$9, cli_citycode=$10, cli_country=$11, cli_phone=$12, cli_landline=$13, cli_email=$14, cli_website=$15, cli_vatno=$16, cli_crno=$17 WHERE cli_id=$1 RETURNING cli_id',
-    [id, name, altname, type, buildingno, streetno, district, pobox, city, citycode, country, phone, landline, email, website, vatno, crno]
+    [id, name, altName, type, buildingno, streetno, district, pobox, city, citycode, country, phone, landline, email, website, vatno, crno]
   );
 
   if (results.rowCount === 1) {

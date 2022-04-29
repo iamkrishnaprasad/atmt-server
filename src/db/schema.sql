@@ -129,39 +129,39 @@ CREATE TABLE tblvendors (
 CREATE SEQUENCE tblpurchaseorders_por_id_seq AS INT START WITH 1;
 CREATE TABLE tblpurchaseorders (
 	por_id VARCHAR(10) PRIMARY KEY DEFAULT ('PORDR'|| RIGHT('00000'||(nextval('tblpurchaseorders_por_id_seq'::regclass)),5)),
-	por_purchaseorderno VARCHAR(20),
-	por_purchasedate TIMESTAMP,
+	por_no VARCHAR(15) NOT NULL,
+	por_purchasedon DATE NOT NULL,
+	por_refno VARCHAR(30),
 	por_isdeleted BOOLEAN DEFAULT FALSE,
 	por_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	ven_id VARCHAR(10) REFERENCES tblvendors(ven_id),
+	pyt_id VARCHAR(10) REFERENCES tblpaymentterms(pyt_id),
 	bnc_id VARCHAR(10) REFERENCES tblbranches(bnc_id),
 	usr_id UUID REFERENCES tblusers(usr_id)
 );
 
 CREATE SEQUENCE tblinventories_inv_id_seq AS INT START WITH 1;
 CREATE TABLE tblinventories (
-	inv_id VARCHAR(10) PRIMARY KEY DEFAULT ('INVT'|| RIGHT('00000'||(nextval('tblinventories_inv_id_seq'::regclass)),5)),
-	inv_purchasepriceperitem NUMERIC(10,2) NOT NULL,
-	inv_sellingpriceperitem NUMERIC(10,2) NOT NULL,
-	inv_quantity INT NOT NULL,
-	inv_added_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
-	inv_addedby UUID REFERENCES tblusers(usr_id),
+	inv_id VARCHAR(10) PRIMARY KEY DEFAULT ('INVT'|| RIGHT('0000000'||(nextval('tblinventories_inv_id_seq'::regclass)),6)),
+	inv_quantitybought INT NOT NULL DEFAULT 0,
+	inv_quantityleft INT NOT NULL DEFAULT 0,
+	inv_discountprice NUMERIC(10,4) NOT NULL DEFAULT 0,
+	inv_vatonnetprice NUMERIC(10,4) NOT NULL DEFAULT 0,
+	inv_netprice NUMERIC(10,4) NOT NULL DEFAULT 0,
 	inv_isdeleted BOOLEAN DEFAULT FALSE,
-	por_id VARCHAR(10) REFERENCES tblpurchaseorders(por_id),
+	inv_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
 	pro_id VARCHAR(10) REFERENCES tblproducts(pro_id),
-	vatp_id VARCHAR(10) REFERENCES tblvatpercentage(vatp_id)
+	por_id VARCHAR(10) REFERENCES tblpurchaseorders(por_id)
 );
 
-CREATE SEQUENCE tblstocks_stk_id_seq AS INT START WITH 1;
-CREATE TABLE tblstocks (
-	stk_id VARCHAR(10) PRIMARY KEY DEFAULT ('STOCK'|| RIGHT('00000'||(nextval('tblstocks_stk_id_seq'::regclass)),5)),
-	stk_quantity INT NOT NULL DEFAULT 0,
-	stk_lowstockvalue INT NOT NULL DEFAULT 5,
-	stk_isdeleted BOOLEAN DEFAULT FALSE,
-	stk_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
-	pro_id VARCHAR(10) REFERENCES tblproducts(pro_id),
-	bnc_id VARCHAR(10) REFERENCES tblbranches(bnc_id),
-	usr_id UUID REFERENCES tblusers(usr_id)
+CREATE SEQUENCE tblorderinventories_orin_id_seq AS INT START WITH 1;
+CREATE TABLE tblorderinventories (
+	orin_id VARCHAR(12) PRIMARY KEY DEFAULT ('ORIN'|| RIGHT('000000000'||(nextval('tblorderinventories_orin_id_seq'::regclass)),8)),
+	orin_quantity INT NOT NULL DEFAULT 0,
+	orin_isdeleted BOOLEAN DEFAULT FALSE,
+	orin_created_at TIMESTAMP DEFAULT (now() AT TIME ZONE 'utc'),
+	ordi_id VARCHAR(10) REFERENCES tblorderitems(ordi_id),
+	inv_id VARCHAR(10) REFERENCES tblinventories(inv_id)
 );
 
 CREATE SEQUENCE tblpricelists_prl_id_seq AS INT START WITH 1;

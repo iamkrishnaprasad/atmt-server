@@ -4,20 +4,16 @@ const isAdmin = require('../middleware/isAdmin');
 const async = require('../middleware/async');
 
 const {
-  getActiveProducts,
-  getAllProducts,
-  getActiveProductsbySearch,
-  getAllProductsbySearch,
+  getProducts,
+  getProductsbySearch,
   createProduct,
   updateProductbyId,
   deleteProductbyId,
 } = require('../controllers/productController');
 
-// router.get('/', async(getActiveProducts));
-router.get('/all', async(getAllProducts));
-// router.get('/search/all', async(getAllProductsbySearch));
+router.get('/all', async(getProducts));
 router.post('/', async(createProduct));
-router.post('/search', async(getActiveProductsbySearch));
+router.post('/search', async(getProductsbySearch));
 router.put('/:id', isAdmin, async(updateProductbyId));
 // router.delete('/:id', isAdmin, async(deleteProductbyId));
 

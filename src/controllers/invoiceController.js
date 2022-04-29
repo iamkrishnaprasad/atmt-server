@@ -3,28 +3,6 @@ const db = require('../db');
 const moment = require('moment-timezone');
 const generateQR = require('../utils/generateQR');
 
-const validate = (payload) => {
-  return Joi.object({
-    validTillNoDays: Joi.number().min(0).max(60).required(),
-    refNo: Joi.string().trim().min(0).max(30).required(),
-    paymentTermId: Joi.string().trim().max(10).required(),
-    branchId: Joi.string().trim().max(10).required(),
-    clientId: Joi.string().trim().max(10).required(),
-    items: Joi.array()
-      .items(
-        Joi.object({
-          productId: Joi.string().trim().max(10).required(),
-          vatPercentageId: Joi.string().trim().max(10).required(),
-          sellingPrice: Joi.number().precision(2).required(),
-          discountPrice: Joi.number().precision(4).required(),
-          quantity: Joi.number().greater(0).required(),
-        })
-      )
-      .min(1)
-      .required(),
-  }).validate(payload);
-};
-
 const getItems = async (orderId) => {
   const results = await db.query(
     'SELECT tblproducts.pro_id AS pro_id, pro_name, pro_altname, unty_name, vatp_value, ordi_sellingpriceperitem, ordi_discountpriceperitem, ordi_quantity FROM tblorderitems INNER JOIN tblproducts ON tblorderitems.pro_id = tblproducts.pro_id INNER JOIN tblunittypes ON tblproducts.unty_id = tblunittypes.unty_id INNER JOIN tblvatpercentage ON tblorderitems.vatp_id = tblvatpercentage.vatp_id WHERE ord_id = $1 ORDER BY ordi_id',
@@ -93,7 +71,7 @@ const getAllInvoices = async (req, res) => {
           createdBy: row.usr_id,
           company: {
             name: row.bnc_name,
-            altname: row.bnc_altname,
+            altName: row.bnc_altname,
             buildingno: row.bnc_buildingno,
             streetno: row.bnc_streetno,
             district: row.bnc_district,
@@ -110,7 +88,7 @@ const getAllInvoices = async (req, res) => {
           },
           client: {
             name: row.cli_name,
-            altname: row.cli_altname,
+            altName: row.cli_altname,
             type: row.cli_type,
             buildingno: row.cli_buildingno,
             streetno: row.cli_streetno,
@@ -139,79 +117,119 @@ const getAllInvoices = async (req, res) => {
 
 const createInvoice = async (req, res) => {
   const { id } = req.user;
-  const { error, value } = validate(req.body);
+  const { error, value } = Joi.object({
+    validTillNoDays: Joi.number().min(0).max(60).required(),
+    refNo: Joi.string().trim().min(0).max(30).required(),
+    paymentTermId: Joi.string().trim().max(10).required(),
+    branchId: Joi.string().trim().max(10).required(),
+    clientId: Joi.string().trim().max(10).required(),
+    items: Joi.array()
+      .items(
+        Joi.object({
+          productId: Joi.string().trim().max(10).required(),
+          vatPercentageId: Joi.string().trim().max(10).required(),
+          sellingPrice: Joi.number().precision(2).required(),
+          discountPrice: Joi.number().precision(4).required(),
+          quantity: Joi.number().greater(0).required(),
+        })
+      )
+      .min(1)
+      .required(),
+  }).validate(req.body);
+
   if (error) {
     return res.status(422).json({ message: error.details[0].message });
   }
   const { refNo, paymentTermId, branchId, clientId, items } = value;
 
-  // let clientId = null;
-
-  // if (type === 'I') {
-  //   const clientCreationResult = await db.query(
-  //     'INSERT INTO tblclients(cli_name, cli_altname, cli_type, cli_buildingno, cli_streetno, cli_district, cli_pobox, cli_city, cli_citycode, cli_country, cli_phone, cli_landline, cli_email, cli_website, cli_vatno, cli_crno) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING cli_id',
-  //     [name, altname, type, buildingno, streetno, district, pobox, city, citycode, country, phone, landline, email, website, vatno, crno]
-  //   );
-  //   clientId = clientCreationResult.rows[0].cli_id;
-  // } else if (type === 'B') {
-  //   const clientsResults = await db.query('SELECT cli_id FROM tblclients WHERE cli_vatno=$1', [vatno]);
-  //   if (clientsResults.rowCount === 0) {
-  //     const clientCreationResult = await db.query(
-  //       'INSERT INTO tblclients(cli_name, cli_altname, cli_type, cli_buildingno, cli_streetno, cli_district, cli_pobox, cli_city, cli_citycode, cli_country, cli_phone, cli_landline, cli_email, cli_website, cli_vatno, cli_crno) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING cli_id',
-  //       [name, altname, type, buildingno, streetno, district, pobox, city, citycode, country, phone, landline, email, website, vatno, crno]
-  //     );
-  //     clientId = clientCreationResult.rows[0].cli_id;
-  //   } else if (clientsResults.rowCount === 1) {
-  //     clientId = clientsResults.rows[0].cli_id;
-  //   }
-  // }
-
   const currentYear = moment().tz('Asia/Riyadh').format('YYYY');
 
-  if (clientId !== null) {
-    // if (validTillNoDays) {
-    //   orderCreationResult = await db.query(
-    //     `INSERT INTO tblorders(usr_id, ord_no, ord_refno, ordt_id, bnc_id, cli_id, pyt_id, validtill) VALUES ($1, concat('INV-',$2::text,'-',RIGHT('00000'||(nextval('invoice_no_seq'::regclass)),5)), $3, '1', $4, $5, $6, now() AT TIME ZONE 'utc' + INTERVAL '1 DAY' * $7) RETURNING ord_id`,
-    //     [id, currentYear, refNo, branchId, clientId, paymentTermId, validTillNoDays]
-    //   );
-    // } else {
-    const orderCreationResult = await db.query(
-      `INSERT INTO tblorders(usr_id, ord_no, ord_refno, ordt_id, bnc_id, cli_id, pyt_id) VALUES ($1, concat('INV-',$2::text,'-',RIGHT('00000'||(nextval('invoice_no_seq'::regclass)),5)), $3, '1', $4, $5, $6) RETURNING ord_id`,
-      [id, currentYear, refNo, branchId, clientId, paymentTermId]
-    );
-    // }
-    if (orderCreationResult.rowCount === 1) {
-      const orderId = orderCreationResult.rows[0].ord_id;
-      items.forEach(async (item) => {
-        const { productId, vatPercentageId, sellingPrice, discountPrice, quantity } = item;
+  const orderCreationResult = await db.query(
+    `INSERT INTO tblorders(usr_id, ord_no, ord_refno, ordt_id, bnc_id, cli_id, pyt_id) VALUES ($1, concat('INV-',$2::text,'-',RIGHT('00000'||(nextval('invoice_no_seq'::regclass)),5)), $3, '1', $4, $5, $6) RETURNING ord_id`,
+    [id, currentYear, refNo, branchId, clientId, paymentTermId]
+  );
+  if (orderCreationResult.rowCount === 1) {
+    const orderId = orderCreationResult.rows[0].ord_id;
+    items.forEach(async (item) => {
+      const { productId, vatPercentageId, sellingPrice, discountPrice, quantity } = item;
 
-        // Stock Update
-        const stockResults = await db.query('SELECT stk_quantity FROM tblstocks WHERE pro_id=$1 AND bnc_id=$2', [productId, branchId]);
-        if (stockResults.rowCount === 1) {
-          if (stockResults.rows[0].stk_quantity > 0) {
-            if (quantity <= stockResults.rows[0].stk_quantity) {
-              await db.query('UPDATE tblstocks SET stk_quantity=$3 WHERE pro_id=$1 AND bnc_id=$2', [
-                productId,
-                branchId,
-                stockResults.rows[0].stk_quantity - quantity,
+      const inventoriesResults = await db.query(
+        'SELECT inv_id, inv_quantityleft FROM tblinventories INNER JOIN tblpurchaseorders ON tblpurchaseorders.por_id = tblinventories.por_id WHERE pro_id=$1 AND bnc_id=$2 AND inv_quantityleft > 0 AND inv_isdeleted = false ORDER BY inv_id',
+        [productId, branchId]
+      );
+
+      if (inventoriesResults.rowCount) {
+        const inventoriesTotal = inventoriesResults.rows?.reduce(
+          (partialSum, inventory) => partialSum + Number(inventory?.inv_quantityleft ?? 0),
+          0
+        );
+
+        if (quantity <= inventoriesTotal) {
+          const orderItemResults = await db.query(
+            'INSERT INTO tblorderitems(ordi_addedby, ord_id, ordi_sellingpriceperitem, ordi_discountpriceperitem, ordi_quantity, pro_id, vatp_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [id, orderId, sellingPrice, discountPrice, quantity, productId, vatPercentageId]
+          );
+
+          let remainingQty = quantity;
+          let i = 0;
+          while (inventoriesResults.rows[i] && remainingQty > 0) {
+            if (remainingQty >= inventoriesResults.rows[i].inv_quantityleft) {
+              await db.query('UPDATE tblinventories SET inv_quantityleft=$2 WHERE inv_id=$1', [inventoriesResults.rows[i].inv_id, 0]);
+              await db.query('INSERT INTO tblorderinventories(orin_quantity, ordi_id, inv_id) VALUES ($1, $2, $3)', [
+                inventoriesResults.rows[i].inv_quantityleft,
+                orderItemResults.rows[0].ordi_id,
+                inventoriesResults.rows[i].inv_id,
               ]);
-              // Order Item creation
-              await db.query(
-                'INSERT INTO tblorderitems(ordi_addedby, ord_id, ordi_sellingpriceperitem, ordi_discountpriceperitem, ordi_quantity, pro_id, vatp_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-                [id, orderId, sellingPrice, discountPrice, quantity, productId, vatPercentageId]
-              );
-            } else if (quantity > stockResults.rows[0].stk_quantity) {
-              await db.query('UPDATE tblstocks SET stk_quantity=$3 WHERE pro_id=$1 AND bnc_id=$2', [productId, branchId, 0]);
-              await db.query(
-                'INSERT INTO tblorderitems(ordi_addedby, ord_id, ordi_sellingpriceperitem, ordi_discountpriceperitem, ordi_quantity, pro_id, vatp_id) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-                [id, orderId, sellingPrice, discountPrice, stockResults.rows[0].stk_quantity, productId, vatPercentageId]
-              );
+              remainingQty = remainingQty - inventoriesResults.rows[i].inv_quantityleft;
+            } else {
+              await db.query('UPDATE tblinventories SET inv_quantityleft=$2 WHERE inv_id=$1', [
+                inventoriesResults.rows[i].inv_id,
+                inventoriesResults.rows[i].inv_quantityleft - remainingQty,
+              ]);
+              await db.query('INSERT INTO tblorderinventories(orin_quantity, ordi_id, inv_id) VALUES ($1, $2, $3)', [
+                remainingQty,
+                orderItemResults.rows[0].ordi_id,
+                inventoriesResults.rows[i].inv_id,
+              ]);
+              remainingQty = 0;
             }
+            i++;
+          }
+        } else if (quantity > inventoriesTotal) {
+          const orderItemResults = await db.query(
+            'INSERT INTO tblorderitems(ordi_addedby, ord_id, ordi_sellingpriceperitem, ordi_discountpriceperitem, ordi_quantity, pro_id, vatp_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+            [id, orderId, sellingPrice, discountPrice, inventoriesTotal, productId, vatPercentageId]
+          );
+
+          let remainingQty = inventoriesTotal;
+          let i = 0;
+          while (inventoriesResults.rows[i] && remainingQty > 0) {
+            if (remainingQty >= inventoriesResults.rows[i].inv_quantityleft) {
+              await db.query('UPDATE tblinventories SET inv_quantityleft=$2 WHERE inv_id=$1', [inventoriesResults.rows[i].inv_id, 0]);
+              await db.query('INSERT INTO tblorderinventories(orin_quantity, ordi_id, inv_id) VALUES ($1, $2, $3)', [
+                inventoriesResults.rows[i].inv_quantityleft,
+                orderItemResults.rows[0].ordi_id,
+                inventoriesResults.rows[i].inv_id,
+              ]);
+              remainingQty = remainingQty - inventoriesResults.rows[i].inv_quantityleft;
+            } else {
+              await db.query('UPDATE tblinventories SET inv_quantityleft=$2 WHERE inv_id=$1', [
+                inventoriesResults.rows[i].inv_id,
+                inventoriesResults.rows[i].inv_quantityleft - remainingQty,
+              ]);
+              await db.query('INSERT INTO tblorderinventories(orin_quantity, ordi_id, inv_id) VALUES ($1, $2, $3)', [
+                remainingQty,
+                orderItemResults.rows[0].ordi_id,
+                inventoriesResults.rows[i].inv_id,
+              ]);
+              remainingQty = 0;
+            }
+            i++;
           }
         }
-      });
-      return res.status(200).json({ message: 'Invoice created successfully.' });
-    }
+      }
+    });
+    return res.status(200).json({ message: 'Invoice created successfully.' });
   }
 };
 

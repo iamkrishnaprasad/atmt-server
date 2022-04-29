@@ -15,7 +15,7 @@ router.use('/categories', [auth, isActive], require('./categoryRoutes'));
 router.use('/unittypes', [auth, isActive], require('./unitTypeRoutes'));
 router.use('/products', [auth, isActive], require('./productRoutes'));
 router.use('/vendors', [auth, isActive], require('./vendorRoutes'));
-router.use('/order/purchases/', [auth, isActive], require('./purchasesRoutes'));
+router.use('/purchaseorders/', [auth, isActive], require('./purchasesRoutes'));
 // router.use('/order/purchases/return');
 router.use('/paymentterms', [auth, isActive], require('./paymentTermRoutes'));
 router.use('/invoices', [auth, isActive], require('./invoiceRoutes'));
