@@ -3,6 +3,8 @@ const db = require('../db');
 const moment = require('moment-timezone');
 const generateQR = require('../utils/generateQR');
 
+//
+
 const getItems = async (orderId) => {
   const results = await db.query(
     'SELECT tblproducts.pro_id AS pro_id, pro_name, pro_altname, unty_name, vatp_value, ordi_sellingpriceperitem, ordi_discountpriceperitem, ordi_quantity FROM tblorderitems INNER JOIN tblproducts ON tblorderitems.pro_id = tblproducts.pro_id INNER JOIN tblunittypes ON tblproducts.unty_id = tblunittypes.unty_id INNER JOIN tblvatpercentage ON tblorderitems.vatp_id = tblvatpercentage.vatp_id WHERE ord_id = $1 ORDER BY ordi_id',
