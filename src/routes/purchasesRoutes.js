@@ -12,9 +12,9 @@ const {
 } = require('../controllers/purchaseController');
 
 router.get('/', async(getAllPurchaseOrders));
-router.get('/:id', async(getPurchaseOrderbyId));
+// router.get('/:id', async(getPurchaseOrderbyId));
 router.post('/', async(createPurchaseOrder));
-router.put('/:id', async(updatePurchaseOrderbyId));
+// router.put('/:id', async(updatePurchaseOrderbyId));
 // router.delete('/:id', isAdmin, async(deletePurchaseOrderbyId));
 
 module.exports = router;
