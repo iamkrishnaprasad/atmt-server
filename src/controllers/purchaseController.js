@@ -2,20 +2,28 @@ const Joi = require('joi');
 const db = require('../db');
 const moment = require('moment-timezone');
 
+const roundOff = (value, base = 2) => {
+  return Math.round((value + Number.EPSILON) * Math.pow(10, base)) / Math.pow(10, base);
+};
+
 const prepInventoriesList = (data) => {
   /* eslint-disable camelcase */
   const { inv_id, pro_id, inv_quantitybought, inv_discountprice, inv_vatonnetprice, inv_netprice } = data;
+
+  const totalDiscountPricePerItem = roundOff(inv_discountprice * inv_quantitybought, 4);
+  const totalVATOnNetPricePerItem = roundOff(inv_vatonnetprice * inv_quantitybought, 2);
+  const totalNetPricePerItem = roundOff(
+    (Number(inv_netprice) + Number(inv_vatonnetprice) - Number(inv_discountprice)) * Number(inv_quantitybought),
+    2
+  );
 
   return {
     id: inv_id,
     productId: pro_id,
     quantity: Number(inv_quantitybought),
-    totalDiscountPricePerItem: (inv_discountprice * inv_quantitybought).toFixed(4),
-    totalVATOnNetPricePerItem: (inv_vatonnetprice * inv_quantitybought).toFixed(2),
-    totalNetPricePerItem: (
-      (Number(inv_netprice) + Number(inv_vatonnetprice) - Number(inv_discountprice)) *
-      Number(inv_quantitybought)
-    ).toFixed(2),
+    totalDiscountPricePerItem,
+    totalVATOnNetPricePerItem,
+    totalNetPricePerItem,
   };
   /* eslint-enable camelcase */
 };
@@ -75,9 +83,9 @@ const createPurchaseOrder = async (req, res) => {
     const data = await Promise.all(
       items.map(async (item) => {
         const { productId, quantity, totalAmount, totalDiscountAmount, totalTaxAmount } = item;
-        const discountPrice = (totalDiscountAmount / quantity).toFixed(4);
-        const vatOnNetPrice = (totalTaxAmount / quantity).toFixed(4);
-        const netPrice = ((totalDiscountAmount + totalAmount - totalTaxAmount) / quantity).toFixed(4);
+        const discountPrice = roundOff(totalDiscountAmount / quantity, 6);
+        const vatOnNetPrice = roundOff(totalTaxAmount / quantity, 6);
+        const netPrice = roundOff((totalDiscountAmount + totalAmount - totalTaxAmount) / quantity, 6);
 
         const inventoryResult = await db.query(
           'INSERT INTO tblinventories(por_id, pro_id, inv_quantityleft, inv_quantitybought, inv_discountprice, inv_vatonnetprice, inv_netprice) VALUES ($1, $2, $3, $3, $4, $5, $6) RETURNING *',
@@ -101,16 +109,19 @@ const getInventories = async (purchaseOrderId) => {
   return inventoriesResult.rows.map((row) => {
     /* eslint-disable camelcase */
     const { inv_id, pro_id, inv_quantitybought, inv_discountprice, inv_vatonnetprice, inv_netprice } = row;
+    const totalDiscountPricePerItem = roundOff(inv_discountprice * inv_quantitybought, 4);
+    const totalVATOnNetPricePerItem = roundOff(inv_vatonnetprice * inv_quantitybought, 2);
+    const totalNetPricePerItem = roundOff(
+      (Number(inv_netprice) + Number(inv_vatonnetprice) - Number(inv_discountprice)) * Number(inv_quantitybought),
+      2
+    );
     return {
       id: inv_id,
       productId: pro_id,
       quantity: Number(inv_quantitybought),
-      totalDiscountPricePerItem: (inv_discountprice * inv_quantitybought).toFixed(4),
-      totalVATOnNetPricePerItem: (inv_vatonnetprice * inv_quantitybought).toFixed(2),
-      totalNetPricePerItem: (
-        (Number(inv_netprice) + Number(inv_vatonnetprice) - Number(inv_discountprice)) *
-        Number(inv_quantitybought)
-      ).toFixed(2),
+      totalDiscountPricePerItem,
+      totalVATOnNetPricePerItem,
+      totalNetPricePerItem,
     };
     /* eslint-enable camelcase */
   });
